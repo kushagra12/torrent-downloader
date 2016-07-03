@@ -20,11 +20,18 @@ r = requests.get(initial_path + search_term)
 soup = BeautifulSoup(r.content, 'html.parser')
 
 flag = True
+
 seeders = int(soup.find("table", "data").find_all("tr")[1].find("td", "green center").get_text())
 torrent_name = str(soup.find("table", "data").find_all("tr")[1].find("a", "cellMainLink").get_text())
 
+search_term = re.sub(' s[0-9]{2}e[0-9]{2}', "", search_term, flags=re.I)
+
 if not search_obj:
     search_obj = re.search(r'S[0-9]{2}E[0-9]{2}', torrent_name, re.I)
+    flag_for_saving = True
+else:
+    print "Downloading Specific Episode of " + search_term
+    flag_for_saving = False
 
 if search_obj:
     print "TV series Detected"
@@ -35,10 +42,10 @@ if search_obj:
             print "Latest Episode Already There. Closing Now"
             flag = False
         else:
-            df_shows.set_value(df_shows.show == search_term, "latest_episode", search_obj.group())
+            if flag_for_saving:
+                df_shows.set_value(df_shows.show == search_term, "latest_episode", search_obj.group())
     else:
         print "Adding New TV Series"
-        search_term = re.sub('s[0-9]{2}e[0-9]{2}', "", search_term, flags=re.I)
         df_shows.loc[-1] = [search_term, search_obj.group()]
         df_shows.index += 1
         df_shows = df_shows.sort_index()
@@ -59,6 +66,7 @@ print("Press any key to continue")
 raw_input()
 
 if search_obj:
+    print "******************************************************"
     print "Now Downloading Subtitles"
     time.sleep(5)
     subs = findfile.FindFile()

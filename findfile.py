@@ -5,6 +5,7 @@ import opensubtitles
 
 class FindFile:
     def __init__(self):
+        # You need to change this to your Torrent Download Directory
         self.baseTorrentSpace = "E:\\Downloads\\ff"
 
     def find_file_and_dwld_subs(self, searchterm, episode):
@@ -37,6 +38,7 @@ class FindFile:
         # api.get_details(os.path.join(baseTorrentSpace, file_tv_dwld))
         subs = api.download_subs(self.baseTorrentSpace, file_tv_dwld)
 
-        f = open(os.path.join(self.baseTorrentSpace, subtitles_file_name), mode='w')
-        f.write(subs)
-        f.close()
+        if subs != '':
+            f = open(os.path.join(self.baseTorrentSpace, subtitles_file_name), mode='w')
+            f.write(subs)
+            f.close()

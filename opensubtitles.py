@@ -11,12 +11,31 @@ class OpenSubtitlesAPI:
         self.token = self.svc.LogIn("", "", "en", "OSTestUserAgent")['token']
 
     def download_subs(self, path, file_name):
-        hashed_path = self.hash_file(os.path.join(path, file_name))
 
-        subs_id = self.svc.SearchSubtitles(self.token, [{
+        subs = self.svc.SearchSubtitles(self.token, [{
             'tag': file_name,
             'sublanguageid': 'eng'
-        }])['data'][0]['IDSubtitleFile']
+        }])['data']
+
+        if len(subs) != 0:
+            subs_id = subs[0]['IDSubtitleFile']
+        else:
+            prompt = raw_input("No Subtitles with the name found. Do search based on hash (Y/N) :")
+            if prompt == 'Y' or prompt == 'y':
+                raw_input("Press any button when download completes")
+                hashed_path = self.hash_file(os.path.join(path, file_name))
+                subs = self.svc.SearchSubtitles(self.token, [{
+                    'moviehash': hashed_path,
+                    'moviebytesize': os.path.getsize(os.path.join(path, file_name))
+                }])
+                subs_id = subs[0]['IDSubtitleFile']
+            else:
+                print "Not Downloading subtitles"
+                return ''
+
+        print "*******************************************"
+        print "Episode : " + subs[0]['MovieName'] + '\n'
+        print "Imdb Rating : " + subs[0]['MovieImdbRating'] + '\n'
 
         string = self.svc.DownloadSubtitles(self.token, [subs_id])['data'][0]['data']
         file_string_subtitles = base64.b64decode(string)
